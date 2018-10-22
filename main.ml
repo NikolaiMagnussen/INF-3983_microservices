@@ -10,7 +10,7 @@ let generate_router routes key =
 let routes = [
   (("/", `POST), Handlers.index_post);
   (("/", `GET), Handlers.index_get);
-  (("/kek", `GET), Handlers.stuff);
+  (("/reddit", `GET), Handlers.reddit);
 ]
 
 let handle uri meth _ body =

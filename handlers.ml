@@ -10,13 +10,9 @@ module Handlers = struct
     Lwt.return (`OK, "Got a POST with body: " ^ body)
 
 
-  let body =
+  let reddit _body =
     Client.get (Uri.of_string "https://www.reddit.com/") >>= fun (resp, body) ->
     let code = resp |> Response.status |> Code.string_of_status in
     body |> Cohttp_lwt.Body.to_string >>= fun body ->
-    Lwt.return (code, body)
-
-  let stuff _ =
-    body >>= fun (c, b) ->
-    Lwt.return (`OK, ("Requested something and got back with status: " ^ c ^ " and some body: " ^ b))
+    Lwt.return (`OK, ("Requested something and got back with status: " ^ code ^ " and some body: " ^ body))
 end
