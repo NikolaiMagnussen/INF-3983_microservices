@@ -1,19 +1,15 @@
 open Lwt
 open Cohttp
 open Cohttp_lwt_unix
+open Handlers
 
-let index_get _ =
-    (`OK, "alt er fint")
-
-let index_post body =
-    (`OK, "Got a POST with body: " ^ body)
 
 let generate_router routes key =
     List.assoc_opt key routes
 
 let routes = [
-    (("/", `POST), index_post);
-    (("/", `GET), index_get);
+    (("/", `POST), Handlers.index_post);
+    (("/", `GET), Handlers.index_get);
 ]
 
 let handle uri meth _ body =
