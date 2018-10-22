@@ -2,20 +2,23 @@ open Lwt
 open Cohttp
 open Cohttp_lwt_unix
 
-let index_get body =
+let index_get _ =
     (`OK, "alt er fint")
 
 let index_post body =
-    (`OK, "jeg fikk en kropp" ^ body)
+    (`OK, "Got a POST with body: " ^ body)
 
-let router uri meth =
-    match uri, meth with
-    | "/", `POST -> Some index_post
-    | "/", `GET -> Some index_get
-    | _ -> None
+let generate_router routes key =
+    List.assoc_opt key routes
 
-let handle uri meth headers body =
-    let endpoint_handler = router uri meth in
+let routes = [
+    (("/", `POST), index_post);
+    (("/", `GET), index_get);
+]
+
+let handle uri meth _ body =
+    let router = generate_router routes in
+    let endpoint_handler = router (uri, meth) in
     match endpoint_handler with
     | Some fn -> let (s, b) = fn body in Server.respond_string ~status: s ~body: b ()
     | None -> Server.respond_string ~status: `Not_found ~body: ("404 NOT FOUND: " ^ (Code.string_of_method meth) ^ " to " ^ uri ^ ": " ^ body) ()
