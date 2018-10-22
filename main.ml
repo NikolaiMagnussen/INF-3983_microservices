@@ -10,13 +10,14 @@ let generate_router routes key =
 let routes = [
   (("/", `POST), Handlers.index_post);
   (("/", `GET), Handlers.index_get);
+  (("/kek", `GET), Handlers.stuff);
 ]
 
 let handle uri meth _ body =
   let router = generate_router routes in
   let endpoint_handler = router (uri, meth) in
   match endpoint_handler with
-  | Some fn -> let (s, b) = fn body in Server.respond_string ~status: s ~body: b ()
+  | Some fn -> fn body >>= fun (s, b) -> Server.respond_string ~status: s ~body: b ()
   | None -> Server.respond_string ~status: `Not_found ~body: ("404 NOT FOUND: " ^ (Code.string_of_method meth) ^ " to " ^ uri ^ ": " ^ body) ()
 
 let server =
