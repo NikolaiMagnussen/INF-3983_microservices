@@ -2,6 +2,7 @@ open Lwt
 open Cohttp
 open Cohttp_lwt_unix
 open Handlers
+open Config
 
 
 let generate_router routes key =
@@ -10,7 +11,8 @@ let generate_router routes key =
 let routes = [
   (("/", `POST), Handlers.index_post);
   (("/", `GET), Handlers.index_get);
-  (("/reddit", `GET), Handlers.reddit);
+  (("/login", `POST), Handlers.login);
+  (("/secret", `POST), Handlers.secret);
 ]
 
 let handle uri meth _ body =
@@ -28,7 +30,7 @@ let server =
     body |> Cohttp_lwt.Body.to_string >>= fun body ->
     handle uri meth headers body
   in
-  Server.create ~mode:(`TCP (`Port 8000)) (Server.make ~callback ())
+  Server.create ~mode:(`TCP (`Port Config.front_port)) (Server.make ~callback ())
 
 let () = ignore (Lwt_main.run server)
 

@@ -1,3 +1,3 @@
-(executable
-    (name main)
-    (libraries lwt cohttp cohttp-lwt-unix))
+(executables
+    (names front account_server)
+    (libraries lwt cohttp cohttp-lwt-unix uuidm))
