@@ -12,6 +12,7 @@ let routes = [
   (("/", `POST), Handlers.index_post);
   (("/", `GET), Handlers.index_get);
   (("/login", `POST), Handlers.login);
+  (("/logout", `POST), Handlers.logout);
   (("/secret", `POST), Handlers.secret);
 ]
 

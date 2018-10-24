@@ -10,6 +10,7 @@ let generate_router routes key =
 
 let routes = [
   (("/login", `POST), Account.login);
+  (("/logout", `POST), Account.logout);
   (("/is_logged_in", `POST), Account.is_logged_in);
 ]
 
