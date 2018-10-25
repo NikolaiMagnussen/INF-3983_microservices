@@ -4,34 +4,58 @@ open Cohttp_lwt_unix
 open Config
 
 module Handlers = struct
-  let index_get _ =
-    Lwt.return (`OK, "alt er fint")
+  let index_get _body _h =
+    Lwt.return (`OK, "alt er fint", [])
 
-  let index_post body =
-    Lwt.return (`OK, "Got a POST with body: " ^ body)
+  let index_post body _h =
+    Lwt.return (`OK, "Got a POST with body: " ^ body, [])
 
-  let login b =
-    let uri = Config.account_uri "login" in
-    Client.post ~body: (Cohttp_lwt.Body.of_string b) uri >>= fun (resp, body) ->
-    let code = resp |> Response.status |> Code.string_of_status in
-    body |> Cohttp_lwt.Body.to_string >>= fun body ->
-    Lwt.return (`OK, ("Requested something and got back with status: " ^ code ^ " and some body: " ^ body))
+  let create_session id =
+    (Config.sess_cookie_key, id) |> Cookie.Set_cookie_hdr.make ~path: "/" ~domain: Config.domain ~http_only: true |> Cookie.Set_cookie_hdr.serialize
 
-  let logout b =
-    let uri = Config.account_uri "logout" in
-    Client.post ~body: (Cohttp_lwt.Body.of_string b) uri >>= fun (resp, _body) ->
-    let code = Response.status resp in
-    if code == `OK then
-      Lwt.return (`OK, "You are now logged out and the session is invalidated")
-    else
-      Lwt.return (`Not_found, "That session is not valid or not logged in")
+  let extract_session h =
+    let key_cmp (k, _v) = String.equal Config.sess_cookie_key k in
+    let opt_sess = h |> Cookie.Cookie_hdr.extract |> List.find_opt key_cmp in
+    match opt_sess with
+    | Some (_k, v) -> v
+    | None -> ""
 
-  let secret b =
+  let is_logged_in h =
     let uri = Config.account_uri "is_logged_in" in
-    Client.post ~body: (Cohttp_lwt.Body.of_string b) uri >>= fun (resp, _body) ->
-    let code = Response.status resp in
-    if code == `OK then
-      Lwt.return (`OK, "You are logged in, the secret is: 42")
+    let sess = extract_session h in
+    Client.post ~body: (Cohttp_lwt.Body.of_string sess) uri >>= fun (resp, _body) ->
+    Lwt.return (Response.status resp == `OK)
+
+  let login b h =
+    is_logged_in h >>= fun logged_in ->
+    if not logged_in then
+      let uri = Config.account_uri "login" in
+      Client.post ~body: (Cohttp_lwt.Body.of_string b) uri >>= fun (resp, body) ->
+      let code = Response.status resp in
+      body |> Cohttp_lwt.Body.to_string >>= fun body ->
+      let cookie = create_session body in
+      if code == `OK then
+        Lwt.return (`OK, "You have successfully logged in", [cookie])
+      else
+        Lwt.return (`OK, "Wrong credentials", [])
     else
-      Lwt.return (`Not_found, "You were not logged in, you can't get the secret")
+      Lwt.return (`OK, "You are already logged in", [])
+
+  let logout _b h =
+    let uri = Config.account_uri "logout" in
+    let sess = extract_session h in
+    Client.post ~body: (Cohttp_lwt.Body.of_string sess) uri >>= fun (resp, _body) ->
+    let code = Response.status resp in
+    let cookie = create_session "invalid" in
+    if code == `OK then
+      Lwt.return (`OK, "You are now logged out and the session is invalidated", [cookie])
+    else
+      Lwt.return (`Not_found, "That session is not valid or not logged in", [cookie])
+
+  let secret _b h =
+    is_logged_in h >>= fun logged_in ->
+    if logged_in then
+      Lwt.return (`OK, "You are logged in, the secret is: 42", [])
+    else
+      Lwt.return (`Not_found, "You were not logged in, you can't get the secret", [])
 end

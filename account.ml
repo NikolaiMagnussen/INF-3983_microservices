@@ -54,7 +54,7 @@ module Account = struct
     let username = login_data_list_nth 0 in
     let password = login_data_list_nth 1 in
     if check username password then
-      Lwt.return (`OK, Printf.sprintf "Du har nå logget inn med id %s" (add_new_session ()))
+      Lwt.return (`OK, add_new_session ())
     else
-      Lwt.return (`OK, "Wrong login_info")
+      Lwt.return (`Not_found, "Wrong login_info")
 end
