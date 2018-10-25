@@ -1,6 +1,6 @@
 open Config
 
-module Account = struct
+module Authentication = struct
   let __sessions = ref (ref [])
 
   let get_sessions =
@@ -18,10 +18,10 @@ module Account = struct
     Uuidm.to_string sess
 
   let correct_password =
-    String.equal Config.account_password
+    String.equal Config.authentication_password
 
   let correct_username =
-    String.equal Config.account_username
+    String.equal Config.authentication_username
 
   let check username password =
     correct_username username && correct_password password

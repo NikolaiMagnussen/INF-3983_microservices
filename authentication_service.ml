@@ -1,7 +1,7 @@
 open Lwt
 open Cohttp
 open Cohttp_lwt_unix
-open Account
+open Authentication
 open Config
 
 
@@ -9,9 +9,9 @@ let generate_router routes key =
   List.assoc_opt key routes
 
 let routes = [
-  (("/login", `POST), Account.login);
-  (("/logout", `POST), Account.logout);
-  (("/is_logged_in", `POST), Account.is_logged_in);
+  (("/login", `POST), Authentication.login);
+  (("/logout", `POST), Authentication.logout);
+  (("/is_logged_in", `POST), Authentication.is_logged_in);
 ]
 
 let handle uri meth _ body =
@@ -29,7 +29,7 @@ let server =
     body |> Cohttp_lwt.Body.to_string >>= fun body ->
     handle uri meth headers body
   in
-  Server.create ~mode:(`TCP (`Port Config.account_port)) (Server.make ~callback ())
+  Server.create ~mode:(`TCP (`Port Config.authentication_port)) (Server.make ~callback ())
 
 let () = ignore (Lwt_main.run server)
 

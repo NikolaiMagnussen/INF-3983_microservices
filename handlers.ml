@@ -21,7 +21,7 @@ module Handlers = struct
     | None -> ""
 
   let is_logged_in h =
-    let uri = Config.account_uri "is_logged_in" in
+    let uri = Config.authentication_uri "is_logged_in" in
     let sess = extract_session h in
     Client.post ~body: (Cohttp_lwt.Body.of_string sess) uri >>= fun (resp, _body) ->
     Lwt.return (Response.status resp == `OK)
@@ -29,7 +29,7 @@ module Handlers = struct
   let login b h =
     is_logged_in h >>= fun logged_in ->
     if not logged_in then
-      let uri = Config.account_uri "login" in
+      let uri = Config.authentication_uri "login" in
       Client.post ~body: (Cohttp_lwt.Body.of_string b) uri >>= fun (resp, body) ->
       let code = Response.status resp in
       body |> Cohttp_lwt.Body.to_string >>= fun body ->
@@ -42,7 +42,7 @@ module Handlers = struct
       Lwt.return (`OK, "You are already logged in", [])
 
   let logout _b h =
-    let uri = Config.account_uri "logout" in
+    let uri = Config.authentication_uri "logout" in
     let sess = extract_session h in
     Client.post ~body: (Cohttp_lwt.Body.of_string sess) uri >>= fun (resp, _body) ->
     let code = Response.status resp in
