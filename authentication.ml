@@ -1,24 +1,39 @@
 open Capability_t
+open Config
 
 module Authentication = struct
   module SessionMap = Map.Make(Uuidm)
   module AccountMap = Map.Make(String)
 
-  type account = { username : string; password : string; capabilities : capability }
+  type account = { username : string; hash : Digestif.BLAKE2B.t; salt : string; capabilities : capability }
+
+  let blake_digest str salt =
+    let to_digest = str ^ ":" ^ salt in
+    Digestif.BLAKE2B.digest_string to_digest
+
+  let check_password password salt hash =
+    let digest = blake_digest password salt in
+    Digestif.BLAKE2B.eq digest  hash
+
+  let account_create username password salt capabilities =
+    let digest = blake_digest password salt in
+    {username=username; hash=digest; salt=salt; capabilities=capabilities}
 
   let _sessions_create = SessionMap.empty
-  let _accounts_create = AccountMap.empty |>
-                         AccountMap.add "dummy" {username="dummy"; password="password123"; capabilities=`None} |>
-                         AccountMap.add "user" {username="user"; password="password123"; capabilities=`User 0} |>
-                         AccountMap.add "admin" {username="admin"; password="password123"; capabilities=`Admin 0}
+  let _accounts_create =
+    let accounts = List.map (fun (u, p, s, c) -> (u, account_create u p s c)) Config.authentication_default_users in
+    let add_to_accounts map data =
+      let name, user = data in
+      AccountMap.add name user map in
+    List.fold_left add_to_accounts AccountMap.empty accounts
 
   let _sessions = ref _sessions_create
   let _accounts = ref _accounts_create
 
   let check username password =
-    let trimmed_password = String.trim password in
+    let password = String.trim password in
     match AccountMap.find_opt username !_accounts with
-    | Some account -> String.equal account.password trimmed_password
+    | Some account -> check_password password account.salt account.hash
     | None -> false
 
   let account_capabilities username =
@@ -57,7 +72,7 @@ module Authentication = struct
 
   (* XXX: This is simply for debugging purposes, and should be disabled in production - currently NOT ENABLED as an endpoint *)
   let get_accounts _body =
-    Lwt.return (`OK, String.concat "\n" (List.map (fun (x, y) -> "username: " ^ x ^ " password: " ^ y.password) (AccountMap.bindings !_accounts)))
+    Lwt.return (`OK, String.concat "\n" (List.map (fun (x, y) -> "username: " ^ x ^ " hash: " ^ (Digestif.BLAKE2B.to_hex y.hash) ^ " salt: " ^ y.salt) (AccountMap.bindings !_accounts)))
 
   let is_logged_in body =
     Lwt.return (match Uuidm.of_string body with
