@@ -13,8 +13,13 @@ module Inventory = struct
 
   let inventory_add key quant =
     let (id, old_quant) = InventoryMap.find key !_inventory in
-    _inventory := InventoryMap.add key (id, old_quant+quant) !_inventory;
-    true
+    let new_quant = old_quant + quant in
+    if new_quant < Config.inventory_min || new_quant > Config.inventory_max then
+      false
+    else
+      let new_inventory = InventoryMap.add key (id, new_quant) !_inventory in
+      _inventory := new_inventory;
+      true
 
   let inventory_sub key quant =
     inventory_add key (-quant)
