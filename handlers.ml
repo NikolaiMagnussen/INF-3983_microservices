@@ -8,6 +8,7 @@ module Handlers = struct
     Lwt.return (`OK, "alt er fint", [])
 
   let index_post body _h =
+    Cohttp_lwt.Body.to_string body >>= fun body ->
     Lwt.return (`OK, "Got a POST with body: " ^ body, [])
 
   let create_session id =
@@ -26,11 +27,11 @@ module Handlers = struct
     Client.post ~body: (Cohttp_lwt.Body.of_string sess) uri >>= fun (resp, _body) ->
     Lwt.return (Response.status resp == `OK)
 
-  let login b h =
+  let login body h =
     is_logged_in h >>= fun logged_in ->
     if not logged_in then
       let uri = Config.authentication_uri "login" in
-      Client.post ~body: (Cohttp_lwt.Body.of_string b) uri >>= fun (resp, body) ->
+      Client.post ~body uri >>= fun (resp, body) ->
       let code = Response.status resp in
       body |> Cohttp_lwt.Body.to_string >>= fun body ->
       let cookie = create_session body in
@@ -58,4 +59,36 @@ module Handlers = struct
       Lwt.return (`OK, "You are logged in, the secret is: 42", [])
     else
       Lwt.return (`Not_found, "You were not logged in, you can't get the secret", [])
+
+  let inventory_list _body headers =
+    let uri = Config.inventory_uri "list" in
+    Client.get ~headers uri >>= fun (resp, body) ->
+    body |> Cohttp_lwt.Body.to_string >>= fun body ->
+    match Response.status resp with
+    | `OK -> Lwt.return (`OK, body, [])
+    | _ -> Lwt.return (`Not_found, body, [])
+
+  let inventory_list_item body headers =
+    let uri = Config.inventory_uri "list" in
+    Client.post ~body ~headers uri >>= fun (resp, body) ->
+    body |> Cohttp_lwt.Body.to_string >>= fun body ->
+    match Response.status resp with
+    | `OK -> Lwt.return (`OK, body, [])
+    | _ -> Lwt.return (`Not_found, body, [])
+
+  let inventory_sell body headers =
+    let uri = Config.inventory_uri "sell" in
+    Client.post ~body ~headers uri >>= fun (resp, body) ->
+    body |> Cohttp_lwt.Body.to_string >>= fun body ->
+    match Response.status resp with
+    | `OK -> Lwt.return (`OK, body, [])
+    | _ -> Lwt.return (`Not_found, body, [])
+
+  let inventory_buy body headers =
+    let uri = Config.inventory_uri "buy" in
+    Client.post ~body ~headers uri >>= fun (resp, body) ->
+    body |> Cohttp_lwt.Body.to_string >>= fun body ->
+    match Response.status resp with
+    | `OK -> Lwt.return (`OK, body, [])
+    | _ -> Lwt.return (`Not_found, body, [])
 end
