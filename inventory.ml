@@ -11,6 +11,14 @@ module Inventory = struct
 
   let _inventory = ref inventory_create
 
+  let inventory_add key quant =
+    let (id, old_quant) = InventoryMap.find key !_inventory in
+    _inventory := InventoryMap.add key (id, old_quant+quant) !_inventory;
+    true
+
+  let inventory_sub key quant =
+    inventory_add key (-quant)
+
   let extract_session h =
     let key_cmp (k, _v) = String.equal Config.sess_cookie_key k in
     let opt_sess = h |> Cookie.Cookie_hdr.extract |> List.find_opt key_cmp in
@@ -23,9 +31,6 @@ module Inventory = struct
     let sess = extract_session h in
     Client.post ~body: (Cohttp_lwt.Body.of_string sess) uri >>= fun (resp, _body) ->
     Lwt.return (Response.status resp == `OK)
-
-  let add_new k v =
-    _inventory := InventoryMap.add k v !_inventory
 
   let list_inventory _b h =
     is_logged_in h >>= fun logged_in ->
@@ -42,14 +47,6 @@ module Inventory = struct
       | None -> Lwt.return (`Not_found, key ^ " is not a item we keep in store")
     else
       Lwt.return (`Not_found, "You are not logged in")
-
-  let inventory_add key quant =
-    let (id, old_quant) = InventoryMap.find key !_inventory in
-    _inventory := InventoryMap.add key (id, old_quant+quant) !_inventory;
-    true
-
-  let inventory_sub key quant =
-    inventory_add key (-quant)
 
   let buy_item key h =
     is_logged_in h >>= fun logged_in ->
