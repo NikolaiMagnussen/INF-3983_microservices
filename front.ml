@@ -31,6 +31,10 @@ let handle uri meth headers body =
   | None -> Cohttp_lwt.Body.to_string body >>= fun body ->
     Server.respond_string ~status: `Not_found ~body: ("404 NOT FOUND: " ^ (Code.string_of_method meth) ^ " to " ^ uri ^ ": " ^ body) ()
 
+let get_port =
+  try int_of_string Sys.argv.(1)
+  with Invalid_argument _ -> Config.front_port
+
 let server =
   let callback _conn req body =
     let uri = req |> Request.uri |> Uri.path in
@@ -38,7 +42,7 @@ let server =
     let headers = Request.headers req in
     handle uri meth headers body
   in
-  Server.create ~mode:(`TCP (`Port Config.front_port)) (Server.make ~callback ())
+  Server.create ~mode:(`TCP (`Port get_port)) (Server.make ~callback ())
 
 let () = ignore (Lwt_main.run server)
 
