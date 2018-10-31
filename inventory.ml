@@ -32,38 +32,56 @@ module Inventory = struct
     Client.post ~body: (Cohttp_lwt.Body.of_string sess) uri >>= fun (resp, _body) ->
     Lwt.return (Response.status resp == `OK)
 
+  let capabilities h =
+    let uri = Config.authentication_uri "capabilities" in
+    let sess = h |> extract_session |> Cohttp_lwt.Body.of_string in
+    Client.post ~body: sess uri >>= fun (resp, body) ->
+    match Response.status resp with
+    | `OK ->
+      Cohttp_lwt.Body.to_string body >>= fun body ->
+      Lwt.return (Some (Capability_j.capability_of_string body))
+    | _ -> Lwt.return None
+
   let list_inventory _b h =
-    is_logged_in h >>= fun logged_in ->
-    if logged_in then
-      Lwt.return (`OK, String.concat " " (List.map (fun (x, _y) -> x) (InventoryMap.bindings !_inventory)))
-    else
-      Lwt.return (`Not_found, "You are not logged in")
+    capabilities h >>= fun capabilities ->
+    match capabilities with
+    | None -> Lwt.return (`Not_found, "You are not logged in")
+    | Some _ -> Lwt.return (`OK, String.concat "\n" (List.map (fun (x, _y) -> x) (InventoryMap.bindings !_inventory)))
 
   let list_item key h =
-    is_logged_in h >>= fun logged_in ->
-    if logged_in then
+    capabilities h >>= fun capabilities ->
+    match capabilities with
+    | None -> Lwt.return (`Not_found, "You are not logged in")
+    | Some _ ->
       match InventoryMap.find_opt key !_inventory with
       | Some (id, quant) -> Lwt.return (`OK, Printf.sprintf "Item %s has id %d and %d remains in the inventory" key id quant)
-      | None -> Lwt.return (`Not_found, key ^ " is not a item we keep in store")
-    else
-      Lwt.return (`Not_found, "You are not logged in")
+      | None -> Lwt.return (`Not_found, key ^ " is not an item we keep in store")
 
   let buy_item key h =
-    is_logged_in h >>= fun logged_in ->
-    if logged_in && InventoryMap.mem key !_inventory then
-      if inventory_sub key 1 then
-        Lwt.return (`OK, "You bought 1 " ^ key)
+    capabilities h >>= fun capabilities ->
+    match capabilities with
+    | None -> Lwt.return (`Not_found, "You are not logged in")
+    | Some `None -> Lwt.return (`Not_found, "You do not have permission to buy")
+    | Some c ->
+      if InventoryMap.mem key !_inventory then
+        if inventory_sub key 1 then
+          Lwt.return (`OK, (Capability_j.string_of_capability c) ^ " bought 1 " ^ key)
+        else
+          Lwt.return (`Not_found, (Capability_j.string_of_capability c) ^ " can't buy 1 " ^ key ^ " - not enough in stock")
       else
-        Lwt.return (`Not_found, "You can't buy 1 " ^ key)
-    else
-      Lwt.return (`Not_found, "You are not logged in")
+        Lwt.return (`Not_found, key ^ " is not an itme we keep in store")
 
   let sell_item key h =
-    is_logged_in h >>= fun logged_in ->
-    if logged_in && InventoryMap.mem key !_inventory then
-      if inventory_add key 1 then
-        Lwt.return (`OK, "You just sold 1 " ^ key)
+    capabilities h >>= fun capabilities ->
+    match capabilities with
+    | None -> Lwt.return (`Not_found, "You are not logged in")
+    | Some `None | Some `User _ -> Lwt.return (`Not_found, "You do not have permission to sell")
+    | Some (`Admin _ as c) ->
+      if InventoryMap.mem key !_inventory then
+        if inventory_add key 1 then
+          Lwt.return (`OK, (Capability_j.string_of_capability c) ^ " sold 1 " ^ key)
+        else
+          Lwt.return (`Not_found, (Capability_j.string_of_capability c) ^ " can't sell 1 " ^ key ^ " - too many in stock")
       else
-        Lwt.return (`Not_found, "You can't sell 1 " ^ key)
-    else Lwt.return (`Not_found, "You are not logged in")
+        Lwt.return (`Not_found, key ^ " is not an itme we keep in store")
 end

@@ -86,6 +86,9 @@ module Authentication = struct
 
   let capabilities body =
     Lwt.return (match Uuidm.of_string body with
-        | Some sess -> if session_is_logged_in sess then (`OK, (Capability_j.string_of_capability (get_capabilities sess))) else (`Not_found, "WRONG UUID")
+        | Some sess -> if session_is_logged_in sess then
+            (`OK, (Capability_j.string_of_capability (get_capabilities sess)))
+          else
+            (`Not_found, "WRONG UUID")
         | None -> (`Not_found, "NOT A VALID UUID"))
 end
