@@ -1,0 +1,5 @@
+type capability = [
+  | None
+  | User of int
+  | Admin of int
+]
