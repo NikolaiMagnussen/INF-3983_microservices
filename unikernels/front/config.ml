@@ -1,6 +1,14 @@
 open Mirage
 
-let main = foreign ~deps:[abstract nocrypto] "Unikernel.Front_service" (random @-> conduit @-> job)
+let port =
+  let doc = Key.Arg.info ~doc:"What port to listen on." ["port"] in
+  Key.(create "port" Arg.(opt int 8000 doc))
+
+let main =
+  foreign
+    ~deps:[abstract nocrypto]
+    ~keys:[Key.abstract port]
+    "Unikernel.Front_service" (random @-> conduit @-> job)
 
 let () =
   let packages = [

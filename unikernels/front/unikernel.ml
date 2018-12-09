@@ -33,10 +33,6 @@ module Front_service (R : Mirage_types_lwt.RANDOM) (CON : Conduit_mirage.S) = st
     | None -> Cohttp_lwt.Body.to_string body >>= fun body ->
       H.respond_string ~status: `Not_found ~body: ("404 NOT FOUND: " ^ (Code.string_of_method meth) ^ " to " ^ uri ^ ": " ^ body) ()
 
-  let get_port =
-    try int_of_string Sys.argv.(1)
-    with Invalid_argument _ -> Common.front_port
-
   let start _r conduit _nc =
     let callback _conn req body =
       let uri = req |> Request.uri |> Uri.path in
@@ -45,5 +41,5 @@ module Front_service (R : Mirage_types_lwt.RANDOM) (CON : Conduit_mirage.S) = st
       handle uri meth headers body
     in
     let spec = H.make ~callback () in
-    CON.listen conduit (`TCP get_port) (H.listen spec)
+    CON.listen conduit (`TCP (Key_gen.port())) (H.listen spec)
 end
