@@ -4,10 +4,10 @@ open Cohttp_lwt
 open Common
 
 module Handlers = struct
-  let index_get _body _h =
+  let index_get _body _h _conduit =
     Lwt.return (`OK, "alt er fint", [])
 
-  let index_post body _h =
+  let index_post body _h _conduit =
     Cohttp_lwt.Body.to_string body >>= fun body ->
     Lwt.return (`OK, "Got a POST with body: " ^ body, [])
 
@@ -21,18 +21,19 @@ module Handlers = struct
     | Some (_k, v) -> v
     | None -> ""
 
-  let is_logged_in h =
+  let is_logged_in h ctx =
     let uri = Common.authentication_uri "is_logged_in" in
     let sess = extract_session h in
-    Client.post ~body: (Cohttp_lwt.Body.of_string sess) uri >>= fun (resp, _body) ->
+    Client.post ~ctx ~body: (Cohttp_lwt.Body.of_string sess) uri >>= fun (resp, _body) ->
     Lwt.return (Response.status resp == `OK)
 
-  let login body h =
-    is_logged_in h >>= fun logged_in ->
+  let login body h conduit =
+    let ctx = Common.ctx conduit in
+    is_logged_in h ctx >>= fun logged_in ->
     if not logged_in then
       let uri = Common.authentication_uri "login" in
       Printf.printf "%s\n" (Uri.to_string uri);
-      Client.post ~body uri >>= fun (resp, body) ->
+      Client.post ~ctx ~body uri >>= fun (resp, body) ->
       let code = Response.status resp in
       body |> Cohttp_lwt.Body.to_string >>= fun body ->
       let cookie = create_session body in
@@ -43,10 +44,11 @@ module Handlers = struct
     else
       Lwt.return (`OK, "You are already logged in", [])
 
-  let logout _b h =
+  let logout _b h conduit =
+    let ctx = Common.ctx conduit in
     let uri = Common.authentication_uri "logout" in
     let sess = extract_session h in
-    Client.post ~body: (Cohttp_lwt.Body.of_string sess) uri >>= fun (resp, _body) ->
+    Client.post ~ctx ~body: (Cohttp_lwt.Body.of_string sess) uri >>= fun (resp, _body) ->
     let code = Response.status resp in
     let cookie = create_session "invalid" in
     if code == `OK then
@@ -54,40 +56,45 @@ module Handlers = struct
     else
       Lwt.return (`Not_found, "That session is not valid or not logged in", [cookie])
 
-  let secret _b h =
-    is_logged_in h >>= fun logged_in ->
+  let secret _b h conduit =
+    let ctx = Common.ctx conduit in
+    is_logged_in h ctx >>= fun logged_in ->
     if logged_in then
       Lwt.return (`OK, "You are logged in, the secret is: 42", [])
     else
       Lwt.return (`Not_found, "You were not logged in, you can't get the secret", [])
 
-  let inventory_list _body headers =
+  let inventory_list _body headers conduit =
+    let ctx = Common.ctx conduit in
     let uri = Common.inventory_uri "list" in
-    Client.get ~headers uri >>= fun (resp, body) ->
+    Client.get ~ctx ~headers uri >>= fun (resp, body) ->
     body |> Cohttp_lwt.Body.to_string >>= fun body ->
     match Response.status resp with
     | `OK -> Lwt.return (`OK, body, [])
     | _ -> Lwt.return (`Not_found, body, [])
 
-  let inventory_list_item body headers =
+  let inventory_list_item body headers conduit =
+    let ctx = Common.ctx conduit in
     let uri = Common.inventory_uri "list" in
-    Client.post ~body ~headers uri >>= fun (resp, body) ->
+    Client.post ~ctx ~body ~headers uri >>= fun (resp, body) ->
     body |> Cohttp_lwt.Body.to_string >>= fun body ->
     match Response.status resp with
     | `OK -> Lwt.return (`OK, body, [])
     | _ -> Lwt.return (`Not_found, body, [])
 
-  let inventory_sell body headers =
+  let inventory_sell body headers conduit =
+    let ctx = Common.ctx conduit in
     let uri = Common.inventory_uri "sell" in
-    Client.post ~body ~headers uri >>= fun (resp, body) ->
+    Client.post ~ctx ~body ~headers uri >>= fun (resp, body) ->
     body |> Cohttp_lwt.Body.to_string >>= fun body ->
     match Response.status resp with
     | `OK -> Lwt.return (`OK, body, [])
     | _ -> Lwt.return (`Not_found, body, [])
 
-  let inventory_buy body headers =
+  let inventory_buy body headers conduit =
+    let ctx = Common.ctx conduit in
     let uri = Common.inventory_uri "buy" in
-    Client.post ~body ~headers uri >>= fun (resp, body) ->
+    Client.post ~ctx ~body ~headers uri >>= fun (resp, body) ->
     body |> Cohttp_lwt.Body.to_string >>= fun body ->
     match Response.status resp with
     | `OK -> Lwt.return (`OK, body, [])

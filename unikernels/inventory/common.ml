@@ -1,4 +1,24 @@
+open Conduit
+
 module Common = struct
+  let entry (host:string) ip_str =
+    let ip = Ipaddr.of_string_exn ip_str in
+    host, (fun ~(port:int) -> (`TCP (ip, port) : Conduit.endp))
+
+  let add_entry (host:string) ip_str table =
+    let ip = Ipaddr.of_string_exn ip_str in
+    Hashtbl.add table host (fun ~(port:int) -> (`TCP (ip, port) : Conduit.endp))
+
+  let route_table =
+    let tbl = Hashtbl.create 3 in
+    add_entry "front.local" "10.0.0.2" tbl;
+    add_entry "authentication.local" "10.0.1.2" tbl;
+    add_entry "inventory.local" "10.0.2.2" tbl;
+    tbl
+
+  let static_resolver = Resolver_mirage.static Common.route_table
+  let ctx conduit = Cohttp_mirage.Client.ctx static_resolver conduit
+
   let protocol = "http"
 
   let front_port = 8000
