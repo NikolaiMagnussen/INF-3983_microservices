@@ -16,7 +16,7 @@ module Common = struct
     add_entry "inventory.local" "10.0.2.2" tbl;
     tbl
 
-  let static_resolver = Resolver_mirage.static Common.route_table
+  let static_resolver = Resolver_mirage.static route_table
   let ctx conduit = Cohttp_mirage.Client.ctx static_resolver conduit
 
   let protocol = "http"

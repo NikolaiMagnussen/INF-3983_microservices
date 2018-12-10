@@ -2,6 +2,7 @@ open Lwt
 open Cohttp
 open Cohttp_mirage
 open Common
+open Handlers
 
 module Front_service (R : Mirage_types_lwt.RANDOM) (CON : Conduit_mirage.S) = struct
   module S = Cohttp_mirage.Server(Conduit_mirage.Flow)

@@ -17,7 +17,7 @@ module Inventory_service (R: Mirage_types_lwt.RANDOM) (CON: Conduit_mirage.S) = 
     (("/sell", `POST), Inventory.sell_item);
   ]
 
-  let handle uri meth headers body =
+  let handle uri meth headers body conduit =
     let router = generate_router routes in
     let endpoint_handler = router (uri, meth) in
     match endpoint_handler with
