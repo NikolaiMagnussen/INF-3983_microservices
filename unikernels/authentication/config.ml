@@ -16,4 +16,4 @@ let () =
     package ~ocamlfind:[] "mirage-solo5";
     package ~sublibs:["mirage"] "nocrypto";
   ] in
-  register ~packages "inventory" [main $ default_random $ conduit_direct (generic_stackv4 default_network)]
+  register ~packages "authentication" [main $ default_random $ conduit_direct (generic_stackv4 default_network)]
