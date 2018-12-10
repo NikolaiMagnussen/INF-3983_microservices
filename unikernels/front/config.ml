@@ -14,6 +14,7 @@ let () =
   let packages = [
     package "uri";
     package "mirage-entropy";
+    package "mirage-conduit";
     package "cohttp-mirage";
     package ~ocamlfind:[] "mirage-solo5";
     package ~sublibs:["mirage"] "nocrypto";

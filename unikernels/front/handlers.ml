@@ -12,7 +12,7 @@ module Handlers = struct
     Lwt.return (`OK, "Got a POST with body: " ^ body, [])
 
   let create_session id =
-    (Common.sess_cookie_key, id) |> Cookie.Set_cookie_hdr.make ~path: "/" ~domain: Common.domain ~http_only: true |> Cookie.Set_cookie_hdr.serialize
+    (Common.sess_cookie_key, id) |> Cookie.Set_cookie_hdr.make ~path: "/" ~domain: Common.front_domain ~http_only: true |> Cookie.Set_cookie_hdr.serialize
 
   let extract_session h =
     let key_cmp (k, _v) = String.equal Common.sess_cookie_key k in
@@ -31,6 +31,7 @@ module Handlers = struct
     is_logged_in h >>= fun logged_in ->
     if not logged_in then
       let uri = Common.authentication_uri "login" in
+      Printf.printf "%s\n" (Uri.to_string uri);
       Client.post ~body uri >>= fun (resp, body) ->
       let code = Response.status resp in
       body |> Cohttp_lwt.Body.to_string >>= fun body ->
