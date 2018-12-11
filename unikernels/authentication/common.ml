@@ -1,10 +1,6 @@
 open Conduit
 
 module Common = struct
-  let entry (host:string) ip_str =
-    let ip = Ipaddr.of_string_exn ip_str in
-    host, (fun ~(port:int) -> (`TCP (ip, port) : Conduit.endp))
-
   let add_entry (host:string) ip_str table =
     let ip = Ipaddr.of_string_exn ip_str in
     Hashtbl.add table host (fun ~(port:int) -> (`TCP (ip, port) : Conduit.endp))
