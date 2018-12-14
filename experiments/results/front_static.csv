@@ -1,0 +1,13 @@
+hosting         | connections(10 conc. threads) | requests/second (mean over three runs of 30 seconds)  | latency mean  | latency stdev | failed % (timeout and errors)
+KVM unikernel   |    10                         | 18763.01                                              | 565.64us      | 963.34us      | 0.00%
+KVM unikernel   |   100                         | 13670.39                                              |   7.30ms      |   1.28ms      | 0.00%
+KVM unikernel   |  1000                         | 10029.81                                              | 121.52ms      | 131.41ms      | 0.00%
+KVM unikernel   | 10000                         |  8455.87                                              | 319.38ms      | 369.78ms      | 5.21%
+Linux process   |    10                         |   237.53                                              |  42.02ms      |   1.59ms      | 0.00%
+Linux process   |   100                         |  2336.85                                              |  42.73ms      |   2.01ms      | 0.00%
+Linux process   |  1000                         |  8850.83                                              | 128.15ms      | 123.46ms      | 0.03%
+Linux process   | 10000                         |  8748.00                                              | 157.61ms      | 197.76ms      | 2.25%
+Docker process  |    10                         |   237.36                                              |  42.05ms      |   1.53ms      | 0.00%
+Docker process  |   100                         |  2323.13                                              |  42.98ms      |   2.21ms      | 0.00%
+Docker process  |  1000                         |  9070.62                                              | 123.52ms      | 113.58ms      | 0.03%
+Docker process  | 10000                         |  8210.62                                              | 168.45ms      | 211.02ms      | 2.41%

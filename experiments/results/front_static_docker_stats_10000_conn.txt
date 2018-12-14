@@ -1,0 +1,33 @@
+kongen@kake:~/D/wrk|master✓
+➤ ./wrk -t10 -d30s -c10000 http://10.0.0.2:8000/                                                                                                                      14:35:42
+Running 30s test @ http://10.0.0.2:8000/
+  10 threads and 10000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   178.06ms  234.78ms   2.00s    95.20%
+    Req/Sec   817.82    296.96     1.78k    60.83%
+  244229 requests in 30.04s, 11.68MB read
+  Socket errors: connect 13, read 0, write 0, timeout 7242
+Requests/sec:   8129.76
+Transfer/sec:    398.00KB
+kongen@kake:~/D/wrk|master✓
+➤ ./wrk -t10 -d30s -c10000 http://10.0.0.2:8000/                                                                                                                      14:41:24
+Running 30s test @ http://10.0.0.2:8000/
+  10 threads and 10000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   167.52ms  203.76ms   2.00s    95.66%
+    Req/Sec   820.90    309.32     1.81k    68.10%
+  245165 requests in 30.04s, 11.72MB read
+  Socket errors: connect 13, read 0, write 0, timeout 5770
+Requests/sec:   8160.92
+Transfer/sec:    399.46KB
+kongen@kake:~/D/wrk|master✓
+➤ ./wrk -t10 -d30s -c10000 http://10.0.0.2:8000/                                                                                                                      14:42:28
+Running 30s test @ http://10.0.0.2:8000/
+  10 threads and 10000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   159.78ms  194.53ms   2.00s    93.53%
+    Req/Sec   839.59    334.77     2.06k    59.87%
+  250718 requests in 30.06s, 11.98MB read
+  Socket errors: connect 13, read 0, write 0, timeout 4793
+Requests/sec:   8341.18
+Transfer/sec:    408.13KB

@@ -1,0 +1,33 @@
+kongen@kake:~/D/wrk|master⚡?
+➤ ./wrk -t10 -d30s -c1000 -s ./full_system.lua  http://front.local:8000/                                                                                              15:24:55
+Running 30s test @ http://front.local:8000/
+  10 threads and 1000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   628.75ms  354.09ms   1.88s    84.06%
+    Req/Sec   119.74     40.68   414.00     73.41%
+  35544 requests in 30.02s, 3.12MB read
+  Socket errors: connect 0, read 0, write 0, timeout 1929
+Requests/sec:   1183.85
+Transfer/sec:    106.50KB
+kongen@kake:~/D/wrk|master⚡?
+➤ ./wrk -t10 -d30s -c1000 -s ./full_system.lua  http://front.local:8000/                                                                                              15:25:38
+Running 30s test @ http://front.local:8000/
+  10 threads and 1000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   624.72ms  362.40ms   1.86s    84.37%
+    Req/Sec   120.78     54.49   444.00     69.53%
+  35801 requests in 30.02s, 3.15MB read
+  Socket errors: connect 0, read 0, write 0, timeout 1730
+Requests/sec:   1192.41
+Transfer/sec:    107.30KB
+kongen@kake:~/D/wrk|master⚡?
+➤ ./wrk -t10 -d30s -c1000 -s ./full_system.lua  http://front.local:8000/                                                                                              15:26:16
+Running 30s test @ http://front.local:8000/
+  10 threads and 1000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   590.75ms  333.96ms   1.97s    87.09%
+    Req/Sec   121.09     59.53   460.00     66.92%
+  35794 requests in 30.02s, 3.14MB read
+  Socket errors: connect 0, read 0, write 0, timeout 1358
+Requests/sec:   1192.24
+Transfer/sec:    107.25KB

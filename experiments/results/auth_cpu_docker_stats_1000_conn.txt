@@ -1,0 +1,33 @@
+kongen@kake:~/D/wrk|master⚡?
+➤ ./wrk -t10 -d30s -c1000 -s ./authenticate.lua http://10.0.0.2:8001/login                                                                                            11:59:21
+Running 30s test @ http://10.0.0.2:8001/login
+  10 threads and 1000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   154.96ms  155.33ms   1.97s    93.76%
+    Req/Sec   751.36     86.93     1.07k    73.41%
+  224159 requests in 30.03s, 16.04MB read
+  Socket errors: connect 0, read 0, write 0, timeout 231
+Requests/sec:   7464.75
+Transfer/sec:    547.04KB
+kongen@kake:~/D/wrk|master⚡?
+➤ ./wrk -t10 -d30s -c1000 -s ./authenticate.lua http://10.0.0.2:8001/login                                                                                            11:59:55
+Running 30s test @ http://10.0.0.2:8001/login
+  10 threads and 1000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   169.28ms  171.65ms   2.00s    92.85%
+    Req/Sec   690.84    110.02     1.35k    69.94%
+  205950 requests in 30.02s, 14.74MB read
+  Socket errors: connect 0, read 0, write 0, timeout 319
+Requests/sec:   6860.99
+Transfer/sec:    502.90KB
+kongen@kake:~/D/wrk|master⚡?
+➤ ./wrk -t10 -d30s -c1000 -s ./authenticate.lua http://10.0.0.2:8001/login                                                                                            12:00:30
+Running 30s test @ http://10.0.0.2:8001/login
+  10 threads and 1000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   170.29ms  174.09ms   1.99s    93.25%
+    Req/Sec   681.54    139.93     1.06k    65.98%
+  203292 requests in 30.10s, 14.55MB read
+  Socket errors: connect 0, read 0, write 0, timeout 340
+Requests/sec:   6754.21
+Transfer/sec:    495.04KB
